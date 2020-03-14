@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+        "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg id="WFDesigner" zoomAndPan="magnify" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/2000/xlink/namespace/" height="100%" width="100%" version="1.1">
+
+    <defs>
+        <marker preserveAspectRatio="xMidYMid meet" orient="auto" markerHeight="15" markerWidth="4"
+                markerUnits="strokeWidth" refY="5" refX="0" viewBox="0 0 10 10" id="arrow">
+            <path stroke="black" fill="black" d="M 0 0 L 10 5 L 0 10 z"/>
+        </marker>
+    </defs>
+
+    <rect style="stroke:none;fill:rgb(255,255,255)" height="100%" width="100%" y="0" x="0" id="WFBACKGROUND"/>
+
+    <g id="ToolBarContainer"/>
+</svg>

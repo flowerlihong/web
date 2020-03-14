@@ -1,0 +1,79 @@
+<html>
+<head>
+    <meta content="IE=10" http-equiv="X-UA-Compatible"/>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <title>查看PDF</title>
+    <script type="text/javascript" src="/env.js"></script>
+    <script type="text/javascript" src="/3/jquery/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        var ntko;
+        var attachmentId;//附件ID
+        var access_token;	//用户access_token ,命令类型  Authorization: that.$ls.get(ACCESS_TOKEN)
+        var file_name_str = "正文.pdf";
+
+        function getQueryString(name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i')
+            var r = window.location.search.substr(1).match(reg)
+            if (r != null) return unescape(r[2])
+            return null
+        }
+
+        /* // 初始化去打开文档
+         function init() {
+             attachmentId = getQueryString('attachmentId')
+             ntko = document.getElementById('TANGER_OCX')
+             ntko.AddDocTypePlugin(".pdf", "PDF.NtkoDocument", "4,0,2,0", "/3/ntko/officecontrol/ntkooledocall.cab", 51, true);
+
+             open();
+         }*/
+
+        function initPDF() {
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                /* global API_SERVER */
+                url: API_SERVER + '/api/1/ntko/exists_pdf.json?attachmentId=' + attachmentId,
+                headers: {'X-Auth-Token': access_token},
+                success: function (data) {
+                    if (data.state === 0) {
+                        open_pdf();
+                    } else if (data.state === 400) {
+                        alert('请求失败，请联系OA系统管理员。')
+                    }
+                },
+                error: function (data) {
+                    alert('请求失败，请联系OA系统管理员。')
+                }
+            })
+        }
+
+        // 初始化去打开文档
+        function open_pdf() {
+            // 获取窗口高度
+            ntko = document.getElementById('TANGER_OCX');
+            if (ntko != null) {
+                ntko.AddDocTypePlugin(".pdf", "PDF.NtkoDocument", "4,0,2,0", "/3/ntko/officecontrol/ntkooledocall.cab", 51, true);
+                if (window.innerHeight) {
+                    $("#ntko_content_id").height(window.innerHeight);
+                } else {
+                    $("#ntko_content_id").height($(document).height());
+                }
+                open();
+            }
+        }
+
+        function open() {
+            //打开PDF
+            ntko.BeginOpenFromURL(API_SERVER + '/api/1/ntko/pdf_file.json?attachmentId=' + attachmentId, true);
+        }
+    </script>
+
+    <script type="text/javascript" language="javascript" for="TANGER_OCX"></script>
+</head>
+
+<body onload="attachmentId=getQueryString('caseId');access_token=getQueryString('access_token');initPDF()">
+<div id="ntko_content_id" style="width: 100%; height: 100%;padding:0 0 0 0;margin: 0 0 0 0;">
+    <script type="text/javascript" src="/3/ntko/officecontrol/ntkoofficecontrol.min.js"></script>
+</div>
+</body>
+</html>

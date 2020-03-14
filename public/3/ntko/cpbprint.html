@@ -1,0 +1,236 @@
+<html>
+<head>
+    <meta content="IE=10" http-equiv="X-UA-Compatible"/>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <title>编辑文档</title>
+    <script type="text/javascript" src="/env.js"></script>
+    <script type="text/javascript" src="/3/ntko/js/document.js"></script>
+    <script type="text/javascript" src="/3/jquery/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        var caseId;	//办件ID
+        var access_token;	//用户access_token ,命令类型  X-Auth-Token: that.$ls.get(ACCESS_TOKEN)
+        var userId;	//用户id
+        var fileName;	//文件标题
+        var docType;	//发文类别ID，用于套红头
+        var procInsId;	//流程实例ID
+        var orgId;	//用户机构ID
+        var file_name_str = '呈批表.doc';
+
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]);
+            return null;
+        }
+
+        function CurentTime() {
+            var now = new Date();
+
+            var year = now.getFullYear();       //年
+            var month = now.getMonth() + 1;     //月
+            var day = now.getDate();            //日
+
+            var hh = now.getHours();            //时
+            var mm = now.getMinutes();          //分
+            var ss = now.getSeconds();          //分
+
+            var clock = year + "-";
+
+            if (month < 10)
+                clock += "0";
+
+            clock += month + "-";
+
+            if (day < 10)
+                clock += "0";
+
+            clock += day + " ";
+
+            if (hh < 10)
+                clock += "0";
+
+            clock += hh + ":";
+            if (mm < 10) clock += '0';
+            clock += mm + ":";
+            if (ss < 10) clock += '0';
+            clock += ss;
+            return (clock);
+        }
+
+        //在子页面定义的向父页面回传值的方法，方法名可以自定义
+        function ntkoSendDataToParentPage() {
+            var varData = new Array();
+            varData.push(ntko.docsize);
+            varData.push(CurentTime());
+            ntkoBrowser.ntkoSetReturnValueToParentPage("OnData", varData);
+        }
+
+        function ntkoCloseEvent() {
+        }
+
+        function onbeforeunload() {
+        }
+
+        //关闭窗口
+        function close_window() {
+            window.close();
+        }
+
+        //打印
+        function printDocInfo() {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.PrintOut(true)
+        }
+
+        //打印预览
+        function printDocInfoView() {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.PrintPreview()
+        }
+
+        // eslint-disable-next-line camelcase
+        function initPrint(caseId, docType, access_token, procInsId) {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.Menubar = false// 设置不显示软航菜单
+            ntko.Statusbar = false// 设置是否显示状态栏
+            ntko.TitleBar = false// 设置是否显示标题栏
+
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                // eslint-disable-next-line camelcase
+                url: '/api/1/ntko/exists_print_model.json?docType=' + docType,
+                headers: {'X-Auth-Token': access_token},
+                success: function (data) {
+                    if (data.result.state === 0) {
+                        /* global API_SERVER */
+                        //ntko.OpenFromURL(WEB_SERVER + data.result.path)
+                        var cpbPrint = getCellTotal(docType);//多取行列数据
+                        ntko.OpenFromURL(API_SERVER + '/api/1/cpbopinion/doprintcpb.json?printType=' + docType + '&caseId=' + caseId + '&cell=' + cpbPrint[0] + '&count=' + cpbPrint[1] + '&procInsId=' + procInsId + '&orgId=' + orgId)
+                        onload_data(caseId, docType);//加载数据
+                      if (window.innerHeight) {
+                        $("#doc_info").height(window.innerHeight);
+                      } else {
+                        $("#doc_info").height($(document).height());
+                      }
+                    } else if (data.result.state === 1) {
+                        alert('未配置打印模板，请联系OA系统管理员处理。')
+                    } else if (data.result.state === 400) {
+                        alert('请求失败，400错误,请联系OA系统管理员。')
+                    }
+                },
+                error: function (data) {
+                    alert('请求服务器失败，请联系OA系统管理员。')
+                }
+            })
+        }
+
+        function onload_data($caseId, $docType) {
+            ntko = document.getElementById('TANGER_OCX')
+
+            if ($docType === "PAYAPPLY") {
+              operationPayApplyData($caseId);
+            } else if ($docType === "CLAIMAPPLY") {
+              operationClaimApplyData($caseId);
+            }
+        }
+
+        //另存为
+        function docSaveAs() {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.ShowDialog(3)
+        }
+
+        //关闭窗口
+        function close_window() {
+            window.close();
+        }
+    </script>
+
+    <script type="text/javascript" language="javascript" for="TANGER_OCX" event="OnDocumentClosed()">
+        if (false) ntkoSendDataToParentPage();
+    </script>
+    <style type="text/css">
+        #doc_info {
+            position: relative;
+            padding: 0px;
+            border: 0px solid #E8E9F7;
+            background-color: white;
+            z-index: 99;
+            overflow: auto;
+            width: 100%;
+            height: 100%;
+            z-index: 99;
+        }
+
+        #history_list table {
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000
+        }
+
+        #history_list table td {
+            border-left: 1px solid #000000;
+            border-top: 1px solid #000000;
+            height: 34px;
+        }
+
+        .button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .button input {
+            display: inline-block;
+            background: #1890ff;
+            border: none;
+            padding: 0 20px;
+            color: #fff;
+            height: 22px;
+            margin: 0px 2px;
+            box-shadow: 0px 2px 0px 0px #1368b7;
+            border-radius: 3px;
+            padding-top: 2px;
+        }
+
+        .button .close {
+            background: #dd484b;
+            box-shadow: 0px 2px 0px 0px #b71a28;
+        }
+
+        .button .secondary {
+            background: #ff890a;
+            box-shadow: 0px 2px 0px 0px #b74e0d;
+        }
+
+        .close_input {
+            display: inline-block;
+            border: none;
+            padding: 0 20px;
+            color: #fff;
+            height: 22px;
+            margin: 0px 2px;
+            background: #dd484b;
+            box-shadow: 0px 2px 0px 0px #b71a28;
+            border-radius: 3px;
+            padding-top: 2px;
+        }
+
+    </style>
+</head>
+
+<body onload="caseId=getQueryString('caseId');orgId=getQueryString('orgId');procInsId=getQueryString('procInsId');access_token=getQueryString('access_token');userId=getQueryString('userId');docType=getQueryString('docType');initPrint(caseId,docType,access_token,procInsId);">
+<div style="width: 100%; height: 100%;position: relative;padding-top: 30px;box-sizing: border-box;">
+    <div class="button">
+        <input class="main" type=button value="打印" onclick="printDocInfo()">
+        <input class="main" type=button value="打印预览" onclick="printDocInfoView()">
+        <input class="secondary" type=button value="另存为" onclick="docSaveAs()">
+        <input class="close" type=button value="关闭" onclick="close_window()">
+    </div>
+    <div id="doc_info">
+        <script type="text/javascript" src="/3/ntko/officecontrol/ntkoofficecontrol.min.js"></script>
+    </div>
+</div>
+</body>
+</html>

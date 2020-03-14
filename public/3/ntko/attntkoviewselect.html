@@ -1,0 +1,57 @@
+<html>
+<head>
+    <meta content="IE=10" http-equiv="X-UA-Compatible"/>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <title>查看附件</title>
+    <script type="text/javascript" src="/env.js"></script>
+    <script type="text/javascript" src="/3/ntko/ntkobackground.js"></script>
+    <script type="text/javascript">
+        var ntko;
+        var attachmentId;//附件ID
+        var caseType;//业务类型
+        var access_token;	//用户access_token ,命令类型  Authorization: that.$ls.get(ACCESS_TOKEN)
+        var file_name_str = "";
+
+        function getQueryString(name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i')
+            var r = window.location.search.substr(1).match(reg)
+            if (r != null) return unescape(r[2])
+            return null
+        }
+
+        function initSendtCaseType() {
+            attachmentId=getQueryString('caseId');
+            access_token=getQueryString('access_token');
+            caseType=getQueryString('caseType');
+
+            var cmd = 2;
+            var ntkoed = ntkoBrowser.ExtensionInstalled();
+            if (ntkoed) {
+                if (caseType === 'pdf') {
+                    ntkoBrowser.openWindow(WEB_SERVER + '/3/ntko/pdfview.html?caseId=' + attachmentId, '广东省环境监测中心', 'F851BFD41D2B19ADED5AC4D87861A08F09C3B3C7')
+                } else if (caseType === 'word') {
+                    ntkoBrowser.openWindow(WEB_SERVER + '/3/ntko/documentview.html?caseId=' + attachmentId, '广东省环境监测中心', 'F851BFD41D2B19ADED5AC4D87861A08F09C3B3C7')
+                }
+                if (cmd === 3) {
+                    var CLOSEVENT = true
+                } else {
+                    var CLOSEVENT = false
+                }
+            } else {
+                alert('未安装 ntko')
+                var iTop = ntkoBrowser.NtkoiTop() // 获得窗口的垂直位置
+                var iLeft = ntkoBrowser.NtkoiLeft() // 获得窗口的水平位置
+                window.open(WEB_SERVER + '/3/ntko/exeindex.html', '', 'height=200px,width=500px,top=' + iTop + 'px,left=' + iLeft + 'px,titlebar=no,toolbar=no,menubar=no,scrollbars=auto,resizeable=no,location=no,status=no')
+            }
+            window.close();
+        }
+
+
+        function open(){
+
+        }
+    </script>
+</head>
+<body onload="initSendtCaseType()">
+</body>
+</html>

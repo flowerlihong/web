@@ -1,0 +1,218 @@
+/*------------------- 表格式带边框查看 table 布局 -------------------*/
+
+.fx-form-view {
+  width: 100%;
+  background-color: white;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.fx-form-view th {
+  padding: 14px 8px 14px 10px;
+  border: 1px solid #ccc;
+  font-weight: normal;
+  width: 120px;
+  color: #444;
+  background-color: #f9f9f9;
+  height: 38px;
+}
+
+.fx-form-view td {
+  padding: 14px 8px 14px 10px;
+  border: 1px solid #ccc;
+  min-width: 100px;
+  height: 38px;
+  color: #444;
+}
+
+/*------------------- 表格式查看 table 布局 -------------------*/
+
+.fx-from-view2 {
+  width: 100%;
+  background: #f8f8f8;
+  border-collapse: collapse;
+  border-spacing: 0 1000px;
+}
+
+.fx-from-view2 th {
+  width: 120px;
+  color: #888888;
+  font-weight: normal;
+  padding: 8px;
+  padding-left: 20px;
+  text-align: justify;
+  text-justify: distribute-all-lines;
+  text-align-last: justify
+}
+
+.fx-from-view2 td {
+  color: #001720;
+  padding: 8px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.fx-from-view2 td::before {
+  content: ":";
+  position: absolute;
+  left: 0;
+  color: #888888;
+}
+
+.fx-from-view2 tr:nth-child(1) th, .fx-from-view tr:nth-child(1) td {
+  padding-top: 20px;
+}
+
+.fx-from-view2 tr:nth-last-child(1) th, .fx-from-view tr:nth-last-child(1) td {
+  padding-bottom: 20px;
+}
+
+/*------------------- 表格式输入 table 2列布局 -------------------*/
+
+.fx-form {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.fx-form th {
+  width: 90px;
+  font-weight: normal;
+  vertical-align: top;
+  padding-top: 10px;
+  text-align: right;
+  //text-align: justify;
+  //text-justify: distribute-all-lines;
+  //text-align-last: justify;
+}
+
+.fx-form td {
+  padding-left: 20px;
+  vertical-align: top;
+}
+
+.fx-from td::before {
+  content: ":";
+  position: absolute;
+  left: 0;
+  color: #888888;
+}
+
+.fx-form .no-form-item {
+  padding-top: 0;
+  vertical-align: middle;
+}
+
+.fx-form .ant-form-item {
+  width: 95%;
+}
+
+.fx-form .not-null::before {
+  content: '*';
+  display: inline-block;
+  margin-right: 4px;
+  font-family: SimSun;
+  line-height: 1;
+  font-size: 14px;
+  color: #f5222d;
+}
+
+.fx-form button {
+  margin: 0 6px;
+}
+
+/*------------------- 表格式输入 table 3列布局 -------------------*/
+
+.fx-form3 {
+  width:100%;
+  table-layout: fixed;
+}
+
+.fx-form3 td {
+  padding-right: 5%;
+}
+
+.fx-form3 tr td:nth-last-child(1) {
+  /*padding-right: 0;*/
+}
+
+.fx-form3 button {
+  margin: 0 6px;
+}
+
+.tableFont .ant-table-thead {
+  display: none;
+}
+
+.tableFont .ant-table-thead {
+  display: none;
+}
+
+.tableFont .ant-table-body {
+  border: none;
+}
+.no-content-index {
+  margin: 0 auto;
+  display: table;
+  text-align: center;
+  span {
+    display: table-cell;
+    vertical-align: middle;
+    color: #8C8C8C;
+  }
+}
+.card-head {
+  width: 100%;
+  padding: 0 24px;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 16px;
+  line-height: 24px;
+  box-sizing: content-box !important;
+  background: #fff !important;
+  margin: -24px 0 24px -24px;
+}
+
+// .card-head .ant-card-head-title i {
+//   margin-right: 6px;
+//   font-size: 22px;
+//   vertical-align: top;
+// }
+
+.card-head .title {
+  color: #000;
+}
+
+.card-head .ant-card-head-title {
+  font-weight: 500;
+  font-size: 17px;
+  overflow: inherit;
+}
+
+.card-head .ant-btn {
+  margin-left: 10px;
+}
+
+.card-head .ant-card-extra {
+  padding: 12px 0;
+}
+
+.titleHome {
+  display: flex;
+  justify-content: space-between;
+  margin: -24px 0 0 -24px;
+}
+
+.cardAnnounce .ant-card-body{
+  padding: 24px 24px 10px 24px;
+}
+.cardAnnounce .ant-table-thead > tr > th, .ant-table-tbody > tr > td {
+  padding: 8px 8px !important;
+}
+/*-------------------  -------------------*/
+
+.fx-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}

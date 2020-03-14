@@ -1,0 +1,457 @@
+<html>
+<head>
+    <meta content="IE=10" http-equiv="X-UA-Compatible"/>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8"/>
+    <title>编辑文档</title>
+    <script type="text/javascript" src="/env.js"></script>
+    <script type="text/javascript" src="/3/ntko/officecontrol/ntko.js"></script>
+    <script type="text/javascript" src="/3/ntko/js/taohongtou.js"></script>
+    <script type="text/javascript" src="/3/jquery/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        var caseId;	//办件ID
+        var access_token;	//用户access_token ,命令类型  X-Auth-Token: that.$ls.get(ACCESS_TOKEN)
+        var userId;	//用户id
+        var fileName;	//文件标题
+        var docTypeId;	//发文类别ID，用于套红头
+        var file_name_str = '正文.doc';
+
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]);
+            return null;
+        }
+
+        function CurentTime() {
+            var now = new Date();
+
+            var year = now.getFullYear();       //年
+            var month = now.getMonth() + 1;     //月
+            var day = now.getDate();            //日
+
+            var hh = now.getHours();            //时
+            var mm = now.getMinutes();          //分
+            var ss = now.getSeconds();          //分
+
+            var clock = year + "-";
+
+            if (month < 10)
+                clock += "0";
+
+            clock += month + "-";
+
+            if (day < 10)
+                clock += "0";
+
+            clock += day + " ";
+
+            if (hh < 10)
+                clock += "0";
+
+            clock += hh + ":";
+            if (mm < 10) clock += '0';
+            clock += mm + ":";
+            if (ss < 10) clock += '0';
+            clock += ss;
+            return (clock);
+        }
+
+        //在子页面定义的向父页面回传值的方法，方法名可以自定义
+        function ntkoSendDataToParentPage() {
+            var varData = new Array();
+            varData.push(ntko.docsize);
+            varData.push(CurentTime());
+            ntkoBrowser.ntkoSetReturnValueToParentPage("OnData", varData);
+        }
+
+        function saveDoc($type) {
+            result = ntko.saveToURL(API_SERVER + '/api/1/ntko/upload_doc_zw.json',
+                'FileData',
+                'caseId=' + caseId + '&userId=' + userId + "&fileName=" + fileName,
+                fileName + ".doc",    //上传文件的名称，类似<input type=file 的value
+                0    //与控件一起提交的表单id，也可以是form的序列号，这里应该是0.
+            )
+            //alert(result)  //{"msg":"OK","code":200,"method":"code","state":0}
+            if ($type == "1") {
+                window.close()
+            } else {
+                alert("保存成功！");
+            }
+        }
+
+        /*function historicalEdition() {
+            alert("333333");
+            window.open("http://172.16.1.111:3750/3/ntko/fileHistoricalList.html");
+        }*/
+
+        function ntkoCloseEvent() {
+        }
+
+        function onbeforeunload() {
+        }
+
+        function redHeadedModel() {
+            ntko = document.getElementById('TANGER_OCX')
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                // eslint-disable-next-line camelcase
+                url: '/api/1/dmservices/get_redheaded_model.json?docTypeId=' + docTypeId,
+                headers: {'X-Auth-Token': access_token},
+                success: function (data) {
+                    var doc_type_id = data.result.doc_type_id;
+                    var org_id = data.result.org_id;
+                    var doc_path = data.result.doc_path;//相对路径
+                    var seal_path = data.result.seal_path;
+                    var is_uper = data.result.is_uper;
+
+                    if (ntko.doctype != 1) {//ntko.doctype=1为word文档
+                        return;
+                    }
+                    //ntko.ActiveDocument.Application.Selection.HomeKey(6, 0);//光标移动到文档开头
+                    //ntko.ActiveDocument.Application.Selection.HomeKey(6, 0);//光标移动到文档开头
+                    //ntko.addtemplatefromurl(WEB_SERVER + doc_path);//在光标位置插入红头文档
+                    var docObj = ntko.ActiveDocument;
+                    var app = docObj.Application;
+                    var sel = app.Selection;
+                    var bmFlag =docObj.BookMarks.Exists("Text"); //判断正文书签是否存在
+
+                    if(bmFlag){	//如果存在，得到书签的内容
+                        sel.Goto(-1,0,0,"Text");
+                        sel.Cut();
+                        sel.WholeStory();
+                        sel.Delete();
+                    }else{ //如果不存在，取得整个文档内容，假设全部内容都是正文
+                        sel.WholeStory();
+                        sel.Cut();
+                    }
+                    //ntko.addtemplatefromurl(WEB_SERVER + doc_path);//在光标位置插入红头文档
+
+                    ntko.addtemplatefromurl(WEB_SERVER + doc_path);	//添加红头，红头模板中有个书签，名称为“zhengwen”
+                    var zwbm = docObj.BookMarks("Text");
+                    var zwsel = zwbm.Range;
+                    zwsel.Paste();
+                    docObj.BookMarks.Add("Text",zwsel);
+
+                    onload_ht_data(caseId, docTypeId);//
+                },
+                error: function (data) {
+                    alert('请求失败，请联系OA系统管理员。')
+                }
+            })
+        }
+
+        function historicalEdition(width, height) {
+            location.href = "#";
+            var windowstr = document.getElementById("popLayer").innerHTML;
+            document.getElementById("infoDiv").innerHTML = windowstr;
+            document.getElementById("infoDiv").style.left = ((document.body.clientWidth - width) > 0 ? (document.body.clientWidth - width) : 0) / 2 + "px";
+            document.getElementById("infoDiv").style.top = 100 + "px";
+            document.getElementById("infoDiv").style.zIndex = 10001;
+            document.getElementById("infoDiv").style.width = width + "px";
+            document.getElementById("infoDiv").style.height = height + "px";
+            document.getElementById("tranDiv").style.height = document.body.clientHeight + "px";
+            document.getElementById("tranDiv").style.width = document.body.clientWidth + "px";
+            document.getElementById("tranDiv").style.display = "";
+            document.getElementById("tranDivBack").style.display = "";
+            document.getElementById("tranDivBack").style.zIndex = 10000;
+            document.getElementById("infoDiv").style.zIndex = 2147483647;
+            document.getElementById("infoDiv").style.display = "";
+        }
+
+        function closeWindow() {
+            document.getElementById("tranDiv").style.display = "none";
+        }
+
+        function changeVal() {
+            var time = document.getElementById("time");
+            time.value = "";
+            //alert(document.getElementById("link").innerHTML);
+        }
+
+        function getVal() {
+            var time = document.getElementById("time").value;
+            var patrn = /[0-9]/;
+            if (!patrn.exec(time)) {
+                alert("内容只能为整数，请重新输入！");
+                return false;
+            }
+            if (time <= 0) {
+                alert("设置时间应该大于0，请重新输入！");
+                return false;
+            }
+            document.getElementById("link").innerHTML = time;
+            //alert(document.getElementById("link").innerHTML);
+            document.getElementById("timeVal").value = document.getElementById("link").innerHTML;
+            alert(document.getElementById("timeVal").value);
+            closeWindow();
+        }
+
+        /**
+         * 显示历史版本记录
+         */
+        function showHistory() {
+            $("#history_list").show();
+            $("#doc_info").hide();
+            $("#history_list").css({"background-color": "white"});
+            onload_history_data();//加载历史数据
+        }
+
+        function onload_history_data() {
+            $("#history_table tr:gt(0)").empty();
+            $("#history_table tr").not(':eq(0)').empty();
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                // eslint-disable-next-line camelcase
+                url: '/api/1/dmservices/get_dmdoc_history_list.json?caseId=' + caseId,
+                headers: {'X-Auth-Token': access_token},
+                success: function (data) {
+                    for (var i = 0; i < data.result.length; i++) {
+                        var tmp = [];
+                        tmp.push("<tr>");
+                        tmp.push("<td>");
+                        tmp.push(data.result[i].dm_version);
+                        tmp.push("</td>");
+                        tmp.push("<td>");
+                        tmp.push(data.result[i].creater_name);
+                        tmp.push("</td>");
+                        tmp.push("<td>");
+                        tmp.push("<a href='###' onclick=doViewHistoryById('" + data.result[i].doc_id + "')>");
+                        tmp.push(data.result[i].create_time);
+                        tmp.push("</a>");
+                        tmp.push("</td>");
+                        tmp.push("<td>");
+                        tmp.push(data.result[i].show_name);
+                        tmp.push("</td>");
+                        tmp.push("</tr>");
+                        $("#history_table").append(tmp.join(""));//增加一行。
+                    }
+                },
+                error: function (data) {
+                    alert('请求失败，请联系OA系统管理员。')
+                }
+            })
+        }
+
+        function doViewHistoryById($id) {
+            $("#history_list").hide();
+            $("#doc_info").show();
+            $("#history_list").css({"background-color": "white"});
+
+            //打开历史记录
+            open_history_record($id);
+        }
+
+        function open_history_record($id) {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.Menubar = false// 设置不显示软航菜单
+            ntko.Statusbar = false// 设置是否显示状态栏
+            ntko.TitleBar = false// 设置是否显示标题栏
+
+            /* $.getJSON(API_SERVER + '/api/1/ntko/exists.json?caseId=' + caseId, function (data) {
+              if (data.exists) {
+                ntko.OpenFromURL(API_SERVER + '/api/1/ntko/file?caseId=' + caseId)
+              } else {
+                ntko.CreateNew('word.document')
+              }
+            }) */
+
+            ntko.OpenFromURL(API_SERVER + '/api/1/ntko/get_id_document?id=' + $id)
+        }
+
+        /**
+         * 隐藏历史版本记录
+         */
+        function hideHistory() {
+            $("#history_list").hide();
+            $("#doc_info").show();
+            $("#history_list").css({"background-color": "white"});
+        }
+
+        //关闭窗口
+        function close_window() {
+            window.close();
+        }
+
+        //打开word
+        function openDocInfo() {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.ShowDialog(1)
+        }
+
+        //另存为
+        function docSaveAs() {
+            ntko = document.getElementById('TANGER_OCX')
+            ntko.ShowDialog(2)
+        }
+
+        //缮印
+        function doShanYing(){
+            ntko = document.getElementById('TANGER_OCX')
+            var activeDocument = ntko.ActiveDocument
+            if (activeDocument.BookMarks.Exists('YZ')) {//印章书签
+                activeDocument.Application.Selection.GoTo(-1,0,0,'YZ') //跳转到指定书签位置
+                $.ajax({
+                    type: 'GET',
+                    dataType: 'json',
+                    // eslint-disable-next-line camelcase
+                    url: '/api/1/dmservices/get_redheaded_model.json?docTypeId=' + docTypeId,
+                    headers: {'X-Auth-Token': access_token},
+                    success: function (data) {
+                        var seal_path = data.result.seal_path;
+                        if (seal_path === '') {
+                            alert("未配置印章，请联系OA系统管理员。")
+                        } else {
+                            ntko.AddPicFromURL(WEB_SERVER + seal_path, false, 0, 0, 1, 100, 1);
+                            ntko.SetReadOnly(true);
+                        }
+                    },
+                    error: function (data) {
+                        alert('请求失败，请联系OA系统管理员。')
+                    }
+                })
+            } else {
+                alert("请先套红头，再操作缮印。")
+            }
+        }
+    </script>
+
+    <script type="text/javascript" language="javascript" for="TANGER_OCX" event="OnDocumentClosed()">
+        if (false) ntkoSendDataToParentPage();
+    </script>
+    <style type="text/css">
+        #history_list {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            text-align: center;
+            z-index: 1009;
+            -moz-opacity: 0.7;
+            opacity: .70;
+            padding-top: 130px;
+            /*filter: alpha(opacity=70);*/
+        }
+
+        #doc_info {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            width: 100%;
+            height: 500px;
+            padding: 0px;
+            border: 0px solid #E8E9F7;
+            background-color: white;
+            z-index: 99;
+            overflow: auto;
+        }
+
+        #history_list table {
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000
+        }
+
+        #history_list table td {
+            border-left: 1px solid #000000;
+            border-top: 1px solid #000000;
+            height: 34px;
+        }
+
+        #btnclose {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 8px 8px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .button input {
+            display: inline-block;
+            background: #1890ff;
+            border: none;
+            padding: 0 20px;
+            color: #fff;
+            height: 22px;
+            margin: 0px 2px;
+            box-shadow: 0px 2px 0px 0px #1368b7;
+            border-radius: 3px;
+            padding-top: 2px;
+        }
+
+        .button .close {
+            background: #dd484b;
+            box-shadow: 0px 2px 0px 0px #b71a28;
+        }
+
+        .button .secondary {
+            background: #ff890a;
+            box-shadow: 0px 2px 0px 0px #b74e0d;
+        }
+        .button .disabled {
+            background: #aeaeae;
+            box-shadow: 0px 2px 0px 0px #808080;
+        }
+
+        .close_input {
+            display: inline-block;
+            border: none;
+            padding: 0 20px;
+            color: #fff;
+            height: 22px;
+            margin: 0px 2px;
+            background: #dd484b;
+            box-shadow: 0px 2px 0px 0px #b71a28;
+            border-radius: 3px;
+            padding-top: 2px;
+        }
+    </style>
+</head>
+
+<body onload="docTypeId=getQueryString('docTypeId');caseId=getQueryString('caseId');access_token=getQueryString('access_token');userId=getQueryString('userId');fileName=getQueryString('fileName');init(caseId,access_token);">
+<div style="width: 100%; height: 100%;position: relative;padding-top: 30px;box-sizing: border-box;">
+    <div class="button">
+        <input class="main" type=button value="打开" onclick="openDocInfo()">
+        <input class="main" type=button value="保存" onclick="saveDoc('0')">
+        <input class="main" type=button value="保存并关闭" onclick="saveDoc('1')">
+        <input class="secondary" type=button value="套红头" onclick="redHeadedModel()">
+        <input class="secondary" type=button value="缮印" onclick="doShanYing()">
+        <input class="secondary" type=button value="查看历史版本" onclick="showHistory()">
+        <input class="secondary" type=button value="另存为" onclick="docSaveAs()">
+        <input class="close" type=button value="关闭" onclick="close_window()">
+    </div>
+    <div id="doc_info" style="width: 100%; height: 100%;z-index: 99;">
+        <script type="text/javascript" src="/3/ntko/officecontrol/ntkoofficecontrol.min.js"></script>
+    </div>
+</div>
+<!--<div id="bg"></div>-->
+<div id="history_list">
+    <div style="text-align:center;font-size:22px;font-weight:bold;padding-top:5px;padding-bottom:10px;">查看历史版本信息</div>
+    <table id="history_table" style="text-align:center;width:80%;display: block;margin: auto" cellpadding="0"
+           cellspacing="0">
+        <tr>
+            <td style="width:8%;text-align:center;font-weight:bold;">版本号</td>
+            <td style="width:15%;text-align:center;font-weight:bold;">编辑者</td>
+            <td style="width:15%;text-align:center;font-weight:bold;">上传时间</td>
+            <td style="font-weight:bold;">文件名称</td>
+        </tr>
+    </table>
+    <div style="height:10px;"></div>
+    <input class="close_input" type="button" value="关闭" onclick="hideHistory();"/>
+</div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+1. \src\layouts\PageView.vue
+   \src\components\PageHeader\PageHeader.vue
+   加入了工作流菜单的slot
+
+2. \src\components\page\GlobalHeader.vue
+   顶部菜单加入了横向导航栏
+
+3. \src\components\menu\index.js
+   菜单链接支持params和query string
+   to: { name: menu.name, params: menu.params, query: menu.query }
+
+4. \src\permission.js
+   \src\store\modules\permission.js
+   前端权限控制
+
+5. \src\App.vue
+   支持 provide / inject 方式刷新页面
+
+6. \layouts\PageView.vue
+   <img v-if="extraImage" :src="extraImage"/>
+   IE 下空白过大
