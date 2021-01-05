@@ -11,7 +11,7 @@
     "@antv/data-set": "^0.10.1",
     "@tinymce/tinymce-vue": "^2.0.0",
     "ant-design-vue": "1.4.8",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "babel-polyfill": "^6.26.0",
     "dayjs": "^1.7.8",
     "enquire.js": "^2.1.6",
